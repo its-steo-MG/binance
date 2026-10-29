@@ -1,0 +1,41 @@
+@import "tailwindcss";
+
+@theme {
+  --color-bg: oklch(0.261 0.022 266);
+  --color-card: oklch(0.297 0.025 265);
+  --color-card2: oklch(0.332 0.024 260);
+  --color-line: oklch(0.323 0.019 260);
+  --color-fg: oklch(0.943 0.005 260);
+  --color-muted: oklch(0.68 0.015 260);
+  --color-dim: oklch(0.57 0.018 260);
+  --color-brand: oklch(0.892 0.166 96);
+  --color-brand-fg: oklch(0.27 0.018 260);
+  --color-up: oklch(0.738 0.143 164);
+  --color-down: oklch(0.677 0.206 17);
+  --color-on-change: oklch(0.99 0 0);
+  --color-coin-btc: oklch(0.75 0.17 62);
+  --color-coin-usdt: oklch(0.72 0.12 181);
+  --color-coin-eth: oklch(0.64 0.15 273);
+  --font-sans: "BinancePlex", "IBM Plex Sans", -apple-system, "SF Pro Text", Roboto, sans-serif;
+}
+
+html, body { background: var(--color-bg); color: var(--color-fg); font-family: var(--font-sans); }
+body { -webkit-tap-highlight-color: transparent; overscroll-behavior-y: none; }
+.safe-top { padding-top: max(env(safe-area-inset-top), 16px); }
+.safe-bottom { padding-bottom: max(env(safe-area-inset-bottom), 6px); }
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { scrollbar-width: none; }
+.tnum { font-variant-numeric: tabular-nums; }
+@keyframes splash-pop { 0% { transform: scale(.6); opacity: 0 } 60% { transform: scale(1.08); opacity: 1 } 100% { transform: scale(1) } }
+.splash-logo { animation: splash-pop .9s ease-out both; }
+@keyframes shimmer { 0%{opacity:.5}50%{opacity:1}100%{opacity:.5} }
+.skeleton { background: var(--color-card2); border-radius: 6px; animation: shimmer 1.2s infinite; }
+
+html { color-scheme: dark; }
+button, a, input { touch-action: manipulation; }
+button, a { -webkit-tap-highlight-color: transparent; }
+button { cursor: pointer; }
+button:focus-visible, a:focus-visible { outline: 2px solid var(--color-brand); outline-offset: 3px; }
+@media (prefers-reduced-motion: reduce) { .splash-logo, .skeleton { animation: none; } }
+
+.coin-bnb g { fill: var(--color-on-change); }
