@@ -1,11 +1,11 @@
 // Client for the TradeRiser Django backend (binance app). No mock data.
-//const DEFAULT_BASE = "https://traderiserproapp.onrender.com/api";
-const DEFAULT_BASE = "http://localhost:8000/api";
+const DEFAULT_BASE = "https://traderiserproapp.onrender.com/api";
 export const apiBase = () => (process.env.NEXT_PUBLIC_API_URL || DEFAULT_BASE).replace(/\/$/, "");
 const prefix = () => (process.env.NEXT_PUBLIC_BINANCE_PREFIX || "/binance").replace(/\/$/, "");
 
 const A = "bn_access", R = "bn_refresh", P = "bn_profile", LAST = "bn_last_active";
-export type Profile = { name: string; username: string; email: string };
+export type Profile = { name: string; username: string; email: string; avatar_url?: string | null; verification_status?: string | null; account_tier?: string | null };
+const profilePath = () => process.env.NEXT_PUBLIC_PROFILE_PATH || `${prefix()}/profile/`;
 
 export const auth = {
   access: () => (typeof window === "undefined" ? null : localStorage.getItem(A)),
@@ -36,15 +36,15 @@ async function refresh(): Promise<string | null> {
 
 async function request<T>(path: string, init: RequestInit = {}, retry = true): Promise<T> {
   const token = auth.access();
-  const res = await fetch(`${apiBase()}${path}`, { ...init, headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}), ...(init.headers || {}) } });
+  const res = await fetch(`${apiBase()}${path}`, { ...init, headers: { ...(init.body instanceof FormData ? {} : { "Content-Type": "application/json" }), ...(token ? { Authorization: `Bearer ${token}` } : {}), ...(init.headers || {}) } });
   if (res.status === 401 && retry && (await refresh())) return request<T>(path, init, false);
   const data = await res.json().catch(() => ({}));
   if (!res.ok) throw new ApiError((data as any).detail || (data as any).error || `Request failed (${res.status})`, res.status);
   return data as T;
 }
 
-export type Wallet = { id: number; label: string; address: string; network: string; balance: string; currency: string; is_primary: boolean; is_active: boolean; created_at: string };
-export type Tx = { id: number; amount: string; transaction_type: string; description: string; reference: string; balance_after: string; created_at: string };
+export type Wallet = { id: number; label: string; address: string; uid?: string | null; network: string; balance: string; currency: string; is_primary: boolean; is_active: boolean; created_at: string; verification_status?: string | null; account_tier?: string | null };
+export type Tx = { id: number; amount: string; transaction_type: string; description: string; reference: string; balance_after: string; created_at: string; status?: string; sender?: string; recipient?: string; note?: string; order_id?: string };
 export type Notif = { id: number; title: string; body: string; is_read: boolean; data: Record<string, unknown>; created_at: string };
 export type Home = { greeting: string; primary_wallet: Wallet | null; wallets: Wallet[]; total_balance: string | number; currency: string };
 const list = <T,>(d: T[] | { results: T[] }) => (Array.isArray(d) ? d : d.results || []);
@@ -56,13 +56,26 @@ export const api = {
     auth.save(d.access, d.refresh);
     const u = d.user || {};
     const name = [u.first_name, u.last_name].filter(Boolean).join(" ") || u.full_name || u.username || username;
-    auth.saveProfile({ name, username: u.username || username, email: u.email || "" });
+    auth.saveProfile({ name, username: u.username || username, email: u.email || "", avatar_url: u.avatar_url || null });
     return d;
   },
   home: () => request<Home>(`${prefix()}/home/`),
+  profile: () => request<Profile>(profilePath()),
+  uploadAvatar: async (file: File) => {
+    const body = new FormData(); body.append("avatar", file);
+    return request<Profile>(profilePath(), { method: "PATCH", body });
+  },
   wallets: async () => list(await request<any>(`${prefix()}/wallets/`)) as Wallet[],
   transactions: async (walletId?: number) => list(await request<any>(`${prefix()}/transactions/${walletId ? `?wallet_id=${walletId}` : ""}`)) as Tx[],
   notifications: async () => list(await request<any>(`${prefix()}/notifications/`)) as Notif[],
+  // Fiat sell/buy via M-Pesa. Requires the backend sell/buy endpoints (see backend-additions/).
+  sell: (body: { wallet_id: number; amount: string; phone: string; email: string; kes_amount: string; fee_kes: string; rate: string }) =>
+    request<{ reference: string; balance_after: string; status: string }>(`${prefix()}/sell/`, { method: "POST", body: JSON.stringify(body) }),
+  buy: (body: { wallet_id: number; kes_amount: string; amount: string; phone: string; method: string; rate: string }) =>
+    request<{ reference: string; balance_after: string; status: string; amount: string }>(`${prefix()}/buy/`, { method: "POST", body: JSON.stringify(body) }),
+  pushConfig: () => request<{ configured: boolean; public_key: string }>(`${prefix()}/push/subscription/`),
+  registerPush: (body: PushSubscriptionJSON) => request(`${prefix()}/push/subscription/`, { method: "POST", body: JSON.stringify(body) }),
+  removePush: (endpoint: string) => request(`${prefix()}/push/subscription/`, { method: "DELETE", body: JSON.stringify({ endpoint }) }),
   markRead: (id: number) => request(`${prefix()}/notifications/${id}/read/`, { method: "POST" }),
 };
 

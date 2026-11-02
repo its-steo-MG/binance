@@ -1,5 +1,12 @@
 "use client";
 import { BinanceMark } from "./icons";
+import type { ButtonHTMLAttributes } from "react";
+export function Button({ className = "", ...props }: ButtonHTMLAttributes<HTMLButtonElement>) {
+  return <button {...props} className={`inline-flex items-center ${className.includes("justify-") ? "" : "justify-center"} gap-2 disabled:cursor-not-allowed disabled:opacity-50 ${className}`} />;
+}
+export function AppMark() {
+  return <span aria-hidden="true" className="flex size-8 items-center justify-center rounded-full bg-brand text-[12px] font-bold text-brand-fg">TR</span>;
+}
 export function CoinIcon({ sym, size = 28 }: { sym: string; size?: number }) {
   const special = ["BTC", "BNB", "USD", "USDT", "ETH"].includes(sym);
   return (

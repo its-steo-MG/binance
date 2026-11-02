@@ -3,10 +3,10 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { sessionValid, touch, auth } from "@/lib/api";
-import { HomeI, MarketsI, TradeI, FuturesI, AssetsI } from "./icons";
+import { BinanceMark, MarketsI, TradeI, FuturesI, AssetsI } from "./icons";
 
 const NAV = [
-  { href: "/", label: "Home", I: HomeI },
+  { href: "/", label: "Home", I: BinanceMark },
   { href: "/markets", label: "Markets", I: MarketsI },
   { href: "/trade", label: "Trade", I: TradeI },
   { href: "/futures", label: "Futures", I: FuturesI },

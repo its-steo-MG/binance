@@ -1,0 +1,3 @@
+import type { Metadata } from "next";
+export const metadata: Metadata = { title: "TradeRiser — Account Info", description: "Manage your account photo and view your UID.", openGraph: { title: "TradeRiser — Account Info", description: "Manage your account photo and view your UID.", type: "website" }, twitter: { card: "summary" } };
+export default function Layout({ children }: { children: React.ReactNode }) { return children; }

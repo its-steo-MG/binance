@@ -1,0 +1,3 @@
+import type { Metadata } from "next";
+export const metadata: Metadata = { title: "Payment Details — Binance", description: "View your wallet transaction amount, time and reference.", openGraph: { title: "Payment Details — Binance", description: "Your wallet transaction details.", type: "website" }, twitter: { card: "summary" } };
+export default function Layout({ children }: { children: React.ReactNode }) { return children; }

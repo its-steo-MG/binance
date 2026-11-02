@@ -11,11 +11,17 @@
   --color-brand: oklch(0.892 0.166 96);
   --color-brand-fg: oklch(0.27 0.018 260);
   --color-up: oklch(0.738 0.143 164);
+  --color-verified: oklch(0.60 0.104 165);
+  --color-verified-surface: oklch(0.30 0.032 165);
   --color-down: oklch(0.677 0.206 17);
   --color-on-change: oklch(0.99 0 0);
   --color-coin-btc: oklch(0.75 0.17 62);
   --color-coin-usdt: oklch(0.72 0.12 181);
   --color-coin-eth: oklch(0.64 0.15 273);
+  --color-allocation: oklch(0.59 0.2 257);
+  --color-transfer: oklch(0.33 0.023 100);
+  --color-profile-panel: oklch(0.274 0.023 235);
+  --color-profile-inset: oklch(0.294 0.021 250);
   --font-sans: "BinancePlex", "IBM Plex Sans", -apple-system, "SF Pro Text", Roboto, sans-serif;
 }
 
@@ -32,10 +38,38 @@ body { -webkit-tap-highlight-color: transparent; overscroll-behavior-y: none; }
 .skeleton { background: var(--color-card2); border-radius: 6px; animation: shimmer 1.2s infinite; }
 
 html { color-scheme: dark; }
-button, a, input { touch-action: manipulation; }
+@layer base {
+  button, a, input { touch-action: manipulation; }
+}
 button, a { -webkit-tap-highlight-color: transparent; }
 button { cursor: pointer; }
 button:focus-visible, a:focus-visible { outline: 2px solid var(--color-brand); outline-offset: 3px; }
 @media (prefers-reduced-motion: reduce) { .splash-logo, .skeleton { animation: none; } }
 
 .coin-bnb g { fill: var(--color-on-change); }
+.assets-total { font-size: 34px; overflow-wrap: anywhere; }
+.assets-page { letter-spacing: 0; }
+.asset-button { display: inline-flex; align-items: center; }
+.asset-allocation { flex-basis: 0; min-width: 2px; }
+@media (max-width: 360px) { .assets-total { font-size: 29px; } .assets-page [role="tablist"][aria-label="Asset accounts"] { gap: 12px; } }
+
+/* Processing hourglass (traced from the reference video): rests full at the bottom,
+   flips quickly, then the sand pours through the neck and piles up again. 3.4s loop. */
+@keyframes bn-hg-turn { 0%,58% { transform: rotate(0deg) } 71.9% { transform: rotate(180deg) } 72%,100% { transform: rotate(0deg) } }
+@keyframes bn-sand-top { 0%,71.9% { transform: translateY(28px) } 72% { transform: translateY(13px) } 90%,100% { transform: translateY(28px) } }
+@keyframes bn-sand-bot { 0%,71.9% { transform: translateY(12px) } 72%,76% { transform: translateY(28px) } 93%,100% { transform: translateY(12px) } }
+@keyframes bn-stream { 0%,72.5% { opacity: 0; transform: scaleY(0) } 76% { opacity: 1; transform: scaleY(1) } 89% { opacity: 1; transform: scaleY(1) } 91%,100% { opacity: 0; transform: scaleY(1) } }
+.bn-hourglass { transform-origin: 50% 50%; animation: bn-hg-turn 3.4s cubic-bezier(.5,0,.3,1) infinite; }
+.bn-sand-top { animation: bn-sand-top 3.4s linear infinite; }
+.bn-sand-bot { animation: bn-sand-bot 3.4s ease-out infinite; }
+.bn-sand-stream { transform-box: fill-box; transform-origin: top; animation: bn-stream 3.4s linear infinite; }
+@keyframes bn-drop { from { transform: translateY(-120%); opacity: 0 } to { transform: none; opacity: 1 } }
+.bn-banner { animation: bn-drop .35s ease-out both; }
+
+.profile-reference { letter-spacing: 0; }
+.profile-reference .profile-avatar { width: 80px; height: 80px; font-size: 26px; }
+.profile-reference .profile-art { width: 48px; height: 48px; }
+.profile-reference .profile-toolbar svg { width: 23px; height: 23px; }
+@media (max-width: 380px) {
+  .profile-reference .profile-avatar { width: 64px; height: 64px; font-size: 22px; }
+}
