@@ -46,7 +46,8 @@ async function request<T>(path: string, init: RequestInit = {}, retry = true): P
 export type Wallet = { id: number; label: string; address: string; uid?: string | null; network: string; balance: string; currency: string; is_primary: boolean; is_active: boolean; created_at: string; verification_status?: string | null; account_tier?: string | null };
 export type Tx = { id: number; amount: string; transaction_type: string; description: string; reference: string; balance_after: string; created_at: string; status?: string; sender?: string; recipient?: string; note?: string; order_id?: string };
 export type Notif = { id: number; title: string; body: string; is_read: boolean; data: Record<string, unknown>; created_at: string };
-export type Home = { greeting: string; primary_wallet: Wallet | null; wallets: Wallet[]; total_balance: string | number; currency: string };
+export type PnlValue = { amount: string | number; percentage?: string | number | null };
+export type Home = { greeting: string; primary_wallet: Wallet | null; wallets: Wallet[]; total_balance: string | number; currency: string; today_pnl?: PnlValue; account_metrics?: Record<string, { today_pnl?: PnlValue }>; balance_history?: import("./balance-history").BalanceSnapshot[] };
 const list = <T,>(d: T[] | { results: T[] }) => (Array.isArray(d) ? d : d.results || []);
 
 export const api = {

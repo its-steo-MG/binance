@@ -5,8 +5,12 @@ import { Screen } from "@/components/shell";
 import { ProfileAvatar, useAccountProfile } from "@/components/profile-avatar";
 import { api, num, fmt } from "@/lib/api";
 import { useApi } from "@/lib/hooks";
-import { BALANCE_UNITS, formatBalance } from "@/lib/balance-currency";
+import { formatBalance } from "@/lib/balance-currency";
+import { PromoCarousel } from "@/components/promo-carousel";
+import { BalanceHistory } from "@/components/balance-history";
 import { useBalanceCurrency } from "@/lib/use-balance-currency";
+import { accountPnl, type AssetMetrics } from "@/lib/assets-data";
+import { PnlValue } from "@/components/assets-controls";
 import { useTickers, useKesRate, useKlines, fmtPrice, COINS } from "@/lib/market";
 import { AppMark, CoinIcon, Change, Skel, Sparkline, Tabs } from "@/components/ui";
 import { BinanceMark, SearchI, ScanI, HeadsetI, ChatI, EyeI, ChevronD, CloseI, HistoryI } from "@/components/icons";
@@ -21,9 +25,10 @@ export default function Home() {
   const [tab, setTab] = useState("Hot");
   const [hide, setHide] = useState(false);
   const [banner, setBanner] = useState(true);
-  const [unit, setUnit] = useBalanceCurrency();
-  const [pick, setPick] = useState(false);
+  const [unit] = useBalanceCurrency();
   const total = num(home.data?.total_balance);
+  // Home Today's PNL comes from the backend home payload (same source as Assets).
+  const pnl = accountPnl(home.data as AssetMetrics | null, "Overview");
   const shown = formatBalance(total, unit, kes, tickers);
   const bnb = tickers?.find((t) => t.base === "BNB");
   const unread = notifs.data?.filter((n) => !n.is_read).length || 0;
@@ -54,20 +59,11 @@ export default function Home() {
           <Link href="/buy" className="rounded-md bg-brand px-3 py-[7px] text-[13px] font-semibold text-brand-fg">Add Funds</Link>
         </div>
         <div className="tnum mt-1 text-[13px] text-muted">{hide ? "****" : `≈ KSh${fmt(total * kes)}`}</div>
-        <div className="mt-1 text-[12px] text-muted">Today&apos;s PNL <span className="text-muted">KSh0.00 (0.00%)</span></div>
+        <div className="mt-1 flex flex-wrap items-center gap-x-1 text-[12px] text-muted">Today&apos;s PNL <PnlValue pnl={pnl} unit={unit} kes={kes} prices={tickers} hidden={hide} /><BalanceHistory snapshots={home.data?.balance_history} unit={unit} kes={kes} prices={tickers} hidden={hide} loading={home.loading} /></div>
         {home.error && <p className="mt-2 text-[12px] text-down">{home.error}</p>}
       </section>
 
-      <div className="relative mt-2">
-        <button aria-label="Change balance currency" aria-expanded={pick} onClick={() => setPick(!pick)} className="mx-auto block text-muted"><ChevronD size={12} /></button>
-        {pick && <div className="absolute left-1/2 top-5 z-20 w-28 -translate-x-1/2 rounded-lg bg-card2 py-1 text-[14px] shadow-xl">{BALANCE_UNITS.map((u) => <button key={u} onClick={() => { setUnit(u); setPick(false); }} className="flex w-full justify-between px-3 py-2">{u}{u === unit && <span className="text-brand">✓</span>}</button>)}</div>}
-      </div>
-      {banner && (
-        <div className="mx-4 mt-4 rounded-lg bg-card p-3">
-          <div className="flex items-center justify-between text-[12px] text-muted">Predict. Climb. Earn Rewards. <button onClick={() => setBanner(false)}><CloseI size={14} /></button></div>
-          <div className="mt-2 flex items-center justify-between text-[12px]"><span className="flex items-center gap-2 font-medium"><BinanceMark size={24} />Binance Pick: $1,000,000 Reward Pool!</span><span className="rounded bg-card2 px-3 py-1 text-[12px]">Join</span></div><div className="mt-3 flex justify-center gap-1"><span className="size-1 rounded-full bg-dim" /><span className="h-1 w-2 rounded-full bg-fg" /><span className="size-1 rounded-full bg-dim" /></div>
-        </div>
-      )}
+      {banner && <PromoCarousel onClose={() => setBanner(false)} />}
 
       <div className="mx-4 mt-3 grid grid-cols-2 gap-3">
         <div className="min-h-[150px] rounded-lg bg-card p-3">

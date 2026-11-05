@@ -20,4 +20,23 @@ describe('phone notification permission', () => {
     Object.defineProperty(window, 'Notification', { configurable: true, value: { permission: 'denied' } });
     expect(pushAvailability()).not.toBeNull();
   });
+  it('registers the /sw.js service worker when notifications are enabled', async () => {
+    Object.defineProperty(window, 'isSecureContext', { configurable: true, value: true });
+    Object.defineProperty(window, 'PushManager', { configurable: true, value: function() {} });
+    const prompt = vi.fn().mockResolvedValue('granted');
+    Object.defineProperty(window, 'Notification', { configurable: true, value: { permission: 'default', requestPermission: prompt } });
+    const subscription = { endpoint: 'https://push.example/1', toJSON: () => ({ endpoint: 'https://push.example/1' }) };
+    const register = vi.fn().mockResolvedValue({
+      pushManager: {
+        getSubscription: vi.fn().mockResolvedValue(null),
+        subscribe: vi.fn().mockResolvedValue(subscription),
+      },
+    });
+    Object.defineProperty(navigator, 'serviceWorker', { configurable: true, value: { register, ready: Promise.resolve({}) } });
+    vi.mocked(api.pushConfig).mockResolvedValue({ configured: true, public_key: 'AAAA' });
+    vi.mocked(api.registerPush).mockResolvedValue(undefined as never);
+    await expect(enablePush()).resolves.toBe('Phone notifications enabled for this account.');
+    expect(register).toHaveBeenCalledWith('/sw.js', { scope: '/' });
+    expect(api.registerPush).toHaveBeenCalledWith({ endpoint: 'https://push.example/1' });
+  });
 });

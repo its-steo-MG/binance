@@ -13,7 +13,7 @@ export async function enablePush(): Promise<string> {
   if (!config.configured || !config.public_key) return "Phone notifications are not configured on TradeRiser yet.";
   const permission = await Notification.requestPermission();
   if (permission !== "granted") return "Notifications were not allowed. You can enable them in site settings.";
-  const registration = await navigator.serviceWorker.register("/binance-push-sw.js", { scope: "/" });
+  const registration = await navigator.serviceWorker.register("/sw.js", { scope: "/" });
   await navigator.serviceWorker.ready;
   const value = config.public_key.replace(/-/g, "+").replace(/_/g, "/");
   const key = Uint8Array.from(atob(value + "=".repeat((4 - value.length % 4) % 4)), c => c.charCodeAt(0));
@@ -26,7 +26,7 @@ export async function enablePush(): Promise<string> {
 }
 export async function disablePush(): Promise<string> {
   if (!("serviceWorker" in navigator)) return "Phone notifications are not enabled on this browser.";
-  const registration = await navigator.serviceWorker.getRegistration("/binance-push-sw.js");
+  const registration = await navigator.serviceWorker.getRegistration("/sw.js");
   const subscription = await registration?.pushManager.getSubscription();
   if (subscription) { await api.removePush(subscription.endpoint); await subscription.unsubscribe(); }
   return "Phone notifications disabled on this device.";

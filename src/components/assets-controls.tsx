@@ -8,11 +8,14 @@ export function AssetButton({ className = "", ...props }: ButtonHTMLAttributes<H
 }
 export function PnlValue({ pnl, unit = "USDT", kes = 1, prices = null, hidden = false }: { pnl?: Pnl; unit?: BalanceUnit; kes?: number; prices?: Ticker[] | null; hidden?: boolean }) {
   const amount = pnl?.amount == null ? null : Number(pnl.amount);
-  if (hidden) return <span className="text-muted">******</span>;
-  if (amount === null || !Number.isFinite(amount)) return <span className="text-muted">--</span>;
+  if (hidden) return <span data-testid="pnl-value" className="text-muted">******</span>;
+  if (amount === null || !Number.isFinite(amount)) return <span data-testid="pnl-value" className="text-muted">--</span>;
   const price = unit === "USDT" ? 1 : prices?.find((p) => p.base === unit)?.price;
   const value = unit === "KES" ? amount * kes : price && price > 0 ? amount / price : null;
   const displayed = value === null ? formatBalance(amount, unit, kes, prices) : assetAmount(value, unit === "KES");
+  const sign = amount < 0 ? "-" : amount > 0 ? "+" : "";
+  const magnitude = displayed.replace(/^-/, "");
+  const label = unit === "KES" ? `KSh${magnitude}` : `${magnitude} ${unit}`;
   const percentage = pnl?.percentage == null ? null : Number(pnl.percentage);
-  return <span data-testid="pnl-value" className={`tnum ${pnlTone(amount)}`}>{amount > 0 ? "+" : ""}{displayed} {unit === "KES" ? "KSh" : unit}{percentage !== null && Number.isFinite(percentage) ? ` (${percentage > 0 ? "+" : ""}${percentage.toFixed(2)}%)` : ""}</span>;
+  return <span data-testid="pnl-value" className={`tnum ${pnlTone(amount)}`}>{sign}{label}{percentage !== null && Number.isFinite(percentage) ? ` (${percentage > 0 ? "+" : ""}${percentage.toFixed(2)}%)` : ""}</span>;
 }
